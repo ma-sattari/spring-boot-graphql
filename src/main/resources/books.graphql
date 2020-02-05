@@ -3,7 +3,7 @@ schema {
 }
 
 type Query {
-  allBooks: [Books]
+  allBooks: [Book]
   book(id: String): Book
 }
 
