@@ -1,5 +1,7 @@
 package com.masoud.springbootgraphql.service;
 
+import com.masoud.springbootgraphql.entity.Book;
+import com.masoud.springbootgraphql.repository.BookRepository;
 import com.masoud.springbootgraphql.service.datafetcher.AllBookDataFetcher;
 import com.masoud.springbootgraphql.service.datafetcher.BookDataFetcher;
 import graphql.GraphQL;
@@ -16,6 +18,7 @@ import org.springframework.stereotype.Service;
 import javax.annotation.PostConstruct;
 import java.io.File;
 import java.io.IOException;
+import java.util.stream.Stream;
 
 @Service
 public class GraphQLService {
@@ -26,6 +29,9 @@ public class GraphQLService {
     private GraphQL graphQL;
 
     @Autowired
+    BookRepository bookRepository;
+
+    @Autowired
     private AllBookDataFetcher allBookDataFetcher;
 
     @Autowired
@@ -33,6 +39,8 @@ public class GraphQLService {
 
     @PostConstruct
     private void loadSchema() throws IOException {
+        // Load books list to DB
+        LoadDataIntoDB();
         // get the schema
         File schemaFile = resource.getFile();
         TypeDefinitionRegistry typeRegistry = new SchemaParser().parse(schemaFile);
@@ -40,6 +48,23 @@ public class GraphQLService {
         GraphQLSchema schema = new SchemaGenerator().makeExecutableSchema(typeRegistry, wiring);
         graphQL = GraphQL.newGraphQL(schema).build();
 
+    }
+
+    private void LoadDataIntoDB() {
+        Stream.of(
+                new Book(1, "Book1", "1",
+                        new String[]{
+                                "Author 1-1"
+                        }, "date1"),
+                new Book(2, "Book2", "1",
+                        new String[]{
+                                "Author 1-1", "Author1-2"
+                        }, "date2"),
+                new Book(3, "Book3", "1",
+                        new String[]{
+                                "Author 1-1", "Author1-2"
+                        }, "date3")
+        ).forEach(book -> bookRepository.save(book));
     }
 
     private RuntimeWiring buildRuntimeWiring() {
@@ -50,7 +75,7 @@ public class GraphQLService {
                 .build();
     }
 
-    public GraphQL getGraphQL(){
+    public GraphQL getGraphQL() {
         return graphQL;
     }
 }
