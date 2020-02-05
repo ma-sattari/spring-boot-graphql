@@ -17,5 +17,5 @@ public class Person implements Serializable {
     private String name;
     private String phone;
     private String email;
-    private String address;
+    private String[] address;
 }
